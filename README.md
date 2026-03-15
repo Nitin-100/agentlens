@@ -27,7 +27,9 @@ Monitor every LLM call, tool use, decision, and error across **any AI agent fram
 [![Tests: 100 passing](https://img.shields.io/badge/tests-100%20passing-brightgreen.svg)]()
 
 <p align="center">
-  <img src="demo.gif" alt="AgentLens Dashboard Demo" width="100%">
+  <video src="Demo.mp4" width="100%" autoplay loop muted playsinline>
+    Your browser does not support the video tag. <a href="Demo.mp4">Watch the demo</a>.
+  </video>
 </p>
 
 ```python
@@ -53,7 +55,9 @@ agentlens verify http://localhost:8340
 ```
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/agentlens/agentlens/main/docs/demo.gif" alt="AgentLens Dashboard Demo" width="800" />
+  <video src="https://raw.githubusercontent.com/Nitin-100/agentlens/main/Demo.mp4" width="800" autoplay loop muted playsinline>
+    Your browser does not support the video tag. <a href="https://raw.githubusercontent.com/Nitin-100/agentlens/main/Demo.mp4">Watch the demo</a>.
+  </video>
   <br/>
   <em>Run <code>agentlens demo</code> → open dashboard → trace tree, agent graph, cost anomalies, prompt diff — all in one place.</em>
 </p>

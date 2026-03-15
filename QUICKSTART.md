@@ -1,7 +1,9 @@
 # AgentLens — Quick Start Guide
 
 <p align="center">
-  <img src="demo.gif" alt="AgentLens Dashboard Demo" width="100%">
+  <video src="Demo.mp4" width="100%" autoplay loop muted playsinline>
+    Your browser does not support the video tag. <a href="Demo.mp4">Watch the demo</a>.
+  </video>
 </p>
 
 Pick your path:
