@@ -16,7 +16,6 @@ Key management:
 """
 
 import os
-import base64
 import logging
 from typing import Optional
 
@@ -31,7 +30,7 @@ SENSITIVE_FIELDS = {
 
 # Try to import cryptography; graceful fallback if not installed
 try:
-    from cryptography.fernet import Fernet, InvalidToken, MultiFernet
+    from cryptography.fernet import Fernet, InvalidToken, MultiFernet  # noqa: F401
     HAS_CRYPTO = True
 except ImportError:
     HAS_CRYPTO = False
@@ -48,7 +47,7 @@ class FieldEncryptor:
 
     def init(self, key: Optional[str] = None):
         """Initialize encryption. Call once at startup.
-        
+
         Args:
             key: Base64-encoded Fernet key. If None, tries env var,
                  then key file, then auto-generates.
@@ -142,7 +141,7 @@ class FieldEncryptor:
 
     def rotate_key(self, new_key: Optional[str] = None) -> str:
         """Generate a new encryption key. Old key is kept for decryption.
-        
+
         Returns the new key (base64-encoded). Caller must re-encrypt existing data.
         """
         if not HAS_CRYPTO:

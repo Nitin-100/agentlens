@@ -18,7 +18,6 @@ For production, use Let's Encrypt or your organization's CA.
 """
 
 import os
-import sys
 import logging
 import argparse
 import subprocess
@@ -28,7 +27,7 @@ logger = logging.getLogger("agentlens.tls")
 
 def generate_self_signed_cert(output_dir: str = ".") -> tuple[str, str]:
     """Generate a self-signed TLS certificate for development.
-    
+
     Uses the `cryptography` library if available, otherwise falls back to openssl CLI.
     Returns (cert_path, key_path).
     """
@@ -111,7 +110,7 @@ def ipaddress_from_string(addr: str):
 
 def get_tls_config() -> dict:
     """Get TLS configuration from environment variables.
-    
+
     Returns kwargs for uvicorn.run() if TLS is configured, empty dict otherwise.
     """
     cert = os.environ.get("AGENTLENS_TLS_CERT")
@@ -166,13 +165,13 @@ if __name__ == "__main__":
 
     if args.generate_self_signed:
         cert, key = generate_self_signed_cert(args.output_dir)
-        print(f"\nSelf-signed certificates generated:")
+        print("\nSelf-signed certificates generated:")
         print(f"  Cert: {cert}")
         print(f"  Key:  {key}")
-        print(f"\nTo use them:")
+        print("\nTo use them:")
         print(f"  set AGENTLENS_TLS_CERT={cert}")
         print(f"  set AGENTLENS_TLS_KEY={key}")
-        print(f"  python tls.py --start")
+        print("  python tls.py --start")
     elif args.start:
         run_with_tls(args.host, args.port)
     else:

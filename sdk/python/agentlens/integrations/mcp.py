@@ -32,7 +32,7 @@ import json
 import time
 import asyncio
 import logging
-from typing import Optional, Any, Dict, List, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..client import AgentLens
@@ -195,7 +195,6 @@ class AgentLensMCPServer:
     def _fetch(self, endpoint: str, method: str = "GET", data: dict = None) -> dict:
         """HTTP call to AgentLens backend."""
         from urllib.request import Request, urlopen
-        from urllib.error import URLError
         import json
 
         url = f"{self.backend_url}{endpoint}"

@@ -84,7 +84,7 @@ jobs:
         run: pip install ruff
 
       - name: Lint SDK
-        run: ruff check sdk/python/agentlens/ --select E,F,W
+        run: ruff check sdk/python/agentlens/
 
       - name: Lint backend
-        run: ruff check backend/ --select E,F,W
+        run: ruff check backend/

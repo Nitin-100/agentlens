@@ -12,7 +12,6 @@ Features:
 
 import os
 import time
-import json
 import asyncio
 import logging
 from typing import Optional

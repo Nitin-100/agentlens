@@ -4,3 +4,10 @@ asyncio_mode = "auto"
 markers = [
     "anyio: mark test to run with anyio",
 ]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = ["E501", "W293", "W291", "W292"]

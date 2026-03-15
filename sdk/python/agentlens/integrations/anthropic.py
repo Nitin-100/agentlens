@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 def patch_anthropic(lens: Optional["AgentLens"] = None):
     """Monkey-patch the Anthropic client to auto-record all message completions."""
     try:
-        import anthropic
+        import anthropic  # noqa: F401
     except ImportError:
         raise ImportError("anthropic package not installed. Run: pip install anthropic")
 

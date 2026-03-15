@@ -11,7 +11,6 @@ Generates 500+ events across 5 different agent types:
 Includes one agent with a cost spike and one with error patterns.
 """
 
-import json
 import time
 import uuid
 import random

@@ -16,9 +16,7 @@ Usage:
 """
 
 import time
-import json
-import traceback
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List
 from uuid import UUID
 
 try:
@@ -215,7 +213,7 @@ class AgentLensCallbackHandler(BaseCallbackHandler):
         if self.lens:
             self._step_counter += 1
             tool_name = getattr(action, "tool", "unknown")
-            tool_input = getattr(action, "tool_input", "")
+            getattr(action, "tool_input", "")
             self.lens.record_step(
                 step_number=self._step_counter,
                 thought=f"Agent decided to use tool: {tool_name}",

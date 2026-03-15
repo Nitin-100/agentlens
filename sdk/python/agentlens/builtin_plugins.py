@@ -27,8 +27,8 @@ import time
 import random
 import logging
 import asyncio
-from typing import Any, Dict, List, Optional
-from datetime import datetime, timedelta, timezone
+from typing import List, Optional
+from datetime import datetime, timezone
 
 from .plugins import DatabasePlugin, ExporterPlugin, EventProcessor
 
@@ -384,7 +384,7 @@ class ClickHousePlugin(DatabasePlugin):
 
     async def health_check(self) -> dict:
         try:
-            r = self._client.query("SELECT 1")
+            self._client.query("SELECT 1")
             return {"status": "ok", "engine": "clickhouse"}
         except Exception as e:
             return {"status": "error", "error": str(e)}

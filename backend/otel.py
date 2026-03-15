@@ -16,7 +16,6 @@ import time
 import json
 import uuid
 import logging
-from typing import Optional
 
 logger = logging.getLogger("agentlens.otel")
 

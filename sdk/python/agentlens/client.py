@@ -16,11 +16,9 @@ Production-grade features:
 import os
 import time
 import json
-import uuid
 import atexit
-import signal
 import threading
-from typing import Optional, Any, Callable, List
+from typing import Optional, Any, Callable
 from urllib.request import Request, urlopen
 from urllib.error import URLError
 

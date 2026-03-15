@@ -182,7 +182,7 @@ def run_demo(url: str = "http://localhost:8340"):
     import urllib.error
 
     endpoint = f"{url}/api/v1/demo/load"
-    print(f"\n🔭 AgentLens Demo — Loading sample data...")
+    print("\n🔭 AgentLens Demo — Loading sample data...")
     print(f"   Server: {url}\n")
 
     try:
@@ -210,7 +210,7 @@ def run_demo(url: str = "http://localhost:8340"):
         return 1
     except urllib.error.URLError as e:
         print(f"  ❌ Cannot connect to {url}: {e.reason}")
-        print(f"     Is the AgentLens server running?")
+        print("     Is the AgentLens server running?")
         return 1
     except Exception as e:
         print(f"  ❌ Error: {e}")

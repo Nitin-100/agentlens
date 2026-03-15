@@ -27,7 +27,6 @@ from collections import defaultdict
 from typing import Optional
 from contextlib import asynccontextmanager
 from urllib.request import Request, urlopen
-from urllib.error import URLError
 
 from fastapi import FastAPI, HTTPException, Header, Query, Request as FRequest, WebSocket, WebSocketDisconnect, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -37,13 +36,13 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel, Field, field_validator
 
 import database as db
-from auth import AuthManager, AuthContext, Role, ProjectManager, init_auth_tables
+from auth import AuthManager, AuthContext, ProjectManager, init_auth_tables
 from encryption import encryptor, SENSITIVE_FIELDS
 from retention import RetentionManager
 from otel import parse_otel_traces
 from anomaly import CostAnomalyDetector, compute_similarity, compute_diff
 from demo_data import generate_demo_data
-from metrics import record_event as metrics_record_event, render_metrics, api_requests_total, active_websockets
+from metrics import record_event as metrics_record_event, render_metrics
 
 # ─── Structured Logging ─────────────────────────────────────
 
@@ -431,7 +430,7 @@ async def ingest_events(
     for i, raw_event in enumerate(batch.events):
         try:
             # Validate through Pydantic
-            evt = EventItem(**raw_event)
+            EventItem(**raw_event)
             valid_events.append(raw_event)  # Store original dict
         except Exception as e:
             errors.append({"index": i, "error": str(e)})
@@ -961,7 +960,7 @@ async def ingest_otel_traces(
     auth: AuthContext = Depends(require_permission("events.ingest")),
 ):
     """Accept OTLP JSON traces and convert to AgentLens events.
-    
+
     Compatible with OTEL exporters: set endpoint to http://localhost:8340/v1/traces
     """
     body = await request.json()
@@ -991,7 +990,7 @@ async def get_trace_tree(
     auth: AuthContext = Depends(require_permission("events.read")),
 ):
     """Get a full trace as a nested tree structure.
-    
+
     Returns events organized by parent_id into a tree hierarchy
     with timing info for waterfall visualization.
     """
@@ -1008,7 +1007,7 @@ async def get_trace_tree(
             if isinstance(meta, str):
                 try:
                     meta = json.loads(meta)
-                except:
+                except (json.JSONDecodeError, ValueError):
                     meta = {}
             if meta.get("otel_trace_id") == trace_id:
                 trace_events.append(e)
@@ -1224,7 +1223,7 @@ async def load_demo_data(
     auth: AuthContext = Depends(require_permission("events.ingest")),
 ):
     """Load ~500 realistic demo events across 5 agent types.
-    
+
     Includes one agent with cost spikes and one with high error rate.
     """
     project_id = auth.project_id

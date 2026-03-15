@@ -33,13 +33,11 @@ Usage:
     registry.register_processor(PIIRedactor())
 """
 
-import time
-import json
 import logging
 import threading
-from typing import Any, Callable, Dict, List, Optional, Protocol, runtime_checkable
+from typing import Callable, List, Optional
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 logger = logging.getLogger("agentlens.plugins")
 

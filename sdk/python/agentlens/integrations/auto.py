@@ -97,7 +97,7 @@ def auto_patch(lens: Optional["AgentLens"] = None, verbose: bool = True):
 
     # LangChain — callback handler, not monkey-patched
     try:
-        from .langchain import AgentLensCallbackHandler
+        from .langchain import AgentLensCallbackHandler  # noqa: F401
         results["langchain"] = "available (use AgentLensCallbackHandler)"
     except ImportError:
         results["langchain"] = "not installed"

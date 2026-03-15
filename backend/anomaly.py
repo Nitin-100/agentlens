@@ -12,9 +12,7 @@ import time
 import json
 import asyncio
 import logging
-import hashlib
 from typing import Optional
-from collections import defaultdict
 
 logger = logging.getLogger("agentlens.anomaly")
 

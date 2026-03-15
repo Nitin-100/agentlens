@@ -5,8 +5,7 @@ Zero-friction way to instrument agent code.
 
 import time
 import functools
-import traceback
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .client import AgentLens
