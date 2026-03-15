@@ -1,0 +1,60 @@
+# AgentLens Helm Chart — values.yaml
+
+replicaCount: 1
+
+image:
+  repository: agentlens/agentlens
+  tag: "0.3.0"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8340
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  hosts:
+    - host: agentlens.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+env:
+  AGENTLENS_PORT: "8340"
+  AGENTLENS_LOG_LEVEL: "INFO"
+  # AGENTLENS_ENCRYPTION_KEY: "" — set via secret
+  # AGENTLENS_TLS_CERT: ""
+  # AGENTLENS_TLS_KEY: ""
+
+persistence:
+  enabled: true
+  size: 1Gi
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  mountPath: /data
+
+secret:
+  # Create a K8s secret with AGENTLENS_ENCRYPTION_KEY
+  create: false
+  encryptionKey: ""
+
+prometheus:
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+    path: /metrics
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

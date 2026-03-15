@@ -1,0 +1,18 @@
+{{- if .Values.prometheus.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "agentlens.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "agentlens.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "agentlens.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  endpoints:
+    - port: http
+      path: {{ .Values.prometheus.serviceMonitor.path }}
+      interval: {{ .Values.prometheus.serviceMonitor.interval }}
+{{- end }}

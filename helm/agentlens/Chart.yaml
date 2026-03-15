@@ -1,0 +1,15 @@
+apiVersion: v2
+name: agentlens
+description: AgentLens — AI Agent Observability Dashboard
+type: application
+version: 0.3.0
+appVersion: "0.3.0"
+keywords:
+  - ai
+  - agents
+  - observability
+  - llm
+  - monitoring
+home: https://github.com/user/agentlens
+maintainers:
+  - name: AgentLens

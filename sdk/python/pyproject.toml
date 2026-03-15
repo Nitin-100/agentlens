@@ -1,0 +1,124 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentlens"
+version = "0.3.0"
+description = "AI Agent Observability SDK — Monitor what your AI agents actually do"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [{name = "AgentLens Contributors"}]
+keywords = ["ai", "agents", "observability", "monitoring", "llm", "openai", "langchain", "crewai", "mcp"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: System :: Monitoring",
+]
+
+# Zero mandatory dependencies — stdlib only
+dependencies = []
+
+[project.optional-dependencies]
+# Framework integrations
+openai = ["openai>=1.0"]
+anthropic = ["anthropic>=0.20"]
+google = ["google-generativeai>=0.3"]
+langchain = ["langchain-core>=0.1"]
+crewai = ["crewai>=0.1"]
+litellm = ["litellm>=1.0"]
+mcp = ["mcp>=1.0"]
+
+# Database plugins
+postgresql = ["asyncpg>=0.29"]
+clickhouse = ["clickhouse-connect>=0.7"]
+mongodb = ["motor>=3.0"]
+
+# Exporter plugins
+s3 = ["boto3>=1.28"]
+kafka = ["confluent-kafka>=2.0"]
+datadog = ["datadog-api-client>=2.0"]
+
+# Convenience bundles
+all-integrations = [
+    "openai>=1.0",
+    "anthropic>=0.20",
+    "google-generativeai>=0.3",
+    "langchain-core>=0.1",
+    "litellm>=1.0",
+    "mcp>=1.0",
+]
+all-databases = [
+    "asyncpg>=0.29",
+    "clickhouse-connect>=0.7",
+]
+all-exporters = [
+    "boto3>=1.28",
+    "confluent-kafka>=2.0",
+]
+all = [
+    "openai>=1.0",
+    "anthropic>=0.20",
+    "google-generativeai>=0.3",
+    "langchain-core>=0.1",
+    "litellm>=1.0",
+    "mcp>=1.0",
+    "asyncpg>=0.29",
+    "clickhouse-connect>=0.7",
+    "boto3>=1.28",
+    "confluent-kafka>=2.0",
+]
+
+# Backend
+backend = [
+    "fastapi>=0.100",
+    "uvicorn>=0.23",
+    "aiosqlite>=0.19",
+]
+
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "black>=23.0",
+    "ruff>=0.1",
+    "mypy>=1.5",
+]
+
+[project.scripts]
+agentlens = "agentlens.cli:main"
+agentlens-mcp = "agentlens.integrations.mcp:main"
+
+[project.urls]
+Homepage = "https://github.com/agentlens/agentlens"
+Documentation = "https://github.com/agentlens/agentlens#readme"
+Repository = "https://github.com/agentlens/agentlens"
+Issues = "https://github.com/agentlens/agentlens/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agentlens*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py39"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true

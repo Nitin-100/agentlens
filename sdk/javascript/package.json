@@ -1,0 +1,22 @@
+{
+  "name": "agentlens-sdk",
+  "version": "0.3.0",
+  "description": "AgentLens SDK for JavaScript/TypeScript — AI Agent Observability",
+  "main": "agentlens.js",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./agentlens.js",
+      "require": "./agentlens.js"
+    }
+  },
+  "keywords": ["ai", "agent", "observability", "monitoring", "llm", "openai", "anthropic"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/user/agentlens"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

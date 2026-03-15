@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  # AgentLens Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8340:8340"
+    volumes:
+      - agentlens_data:/app/data
+    environment:
+      - AGENTLENS_DB=/app/data/agentlens.db
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8340/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # AgentLens Dashboard (Nginx serves React build, proxies API)
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  agentlens_data:

@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+*.whl
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Node
+node_modules/
+package-lock.json
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Encryption keys
+.encryption_key
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Test / cache
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# Dead letter queue
+agentlens_dlq.jsonl
+
+# Logs
+*.log

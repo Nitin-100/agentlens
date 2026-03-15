@@ -1,0 +1,25 @@
+{
+  "name": "@agentlens/sdk",
+  "version": "0.3.0",
+  "description": "AgentLens TypeScript SDK — AI Agent Observability with full type safety",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "files": ["dist/", "src/", "README.md"],
+  "keywords": ["ai", "agents", "observability", "monitoring", "llm", "openai", "anthropic", "tracing"],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.3.0"
+  },
+  "peerDependencies": {
+    "openai": ">=4.0.0",
+    "@anthropic-ai/sdk": ">=0.20.0"
+  },
+  "peerDependenciesMeta": {
+    "openai": { "optional": true },
+    "@anthropic-ai/sdk": { "optional": true }
+  }
+}
