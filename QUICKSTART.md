@@ -1,9 +1,11 @@
 # AgentLens — Quick Start Guide
 
 <p align="center">
-  <video src="Demo.mp4" width="100%" autoplay loop muted playsinline>
-    Your browser does not support the video tag. <a href="Demo.mp4">Watch the demo</a>.
-  </video>
+  <a href="https://github.com/Nitin-100/agentlens/raw/main/Demo.mp4">
+    <img src="docs/demo-thumbnail.jpg" alt="Watch AgentLens Demo" width="720" />
+    <br/>
+    <sub>▶ Click to watch the full demo video</sub>
+  </a>
 </p>
 
 Pick your path:

@@ -49,11 +49,11 @@ agentlens verify http://localhost:8340
 ```
 
 <p align="center">
-  <video src="https://raw.githubusercontent.com/Nitin-100/agentlens/main/Demo.mp4" width="800" autoplay loop muted playsinline>
-    Your browser does not support the video tag. <a href="https://raw.githubusercontent.com/Nitin-100/agentlens/main/Demo.mp4">Watch the demo</a>.
-  </video>
-  <br/>
-  <em>Run <code>agentlens demo</code> → open dashboard → trace tree, agent graph, cost anomalies, prompt diff — all in one place.</em>
+  <a href="https://github.com/Nitin-100/agentlens/raw/main/Demo.mp4">
+    <img src="https://raw.githubusercontent.com/Nitin-100/agentlens/main/docs/demo-thumbnail.jpg" alt="Watch AgentLens Demo" width="720" />
+    <br/>
+    <sub>▶ Click to watch the demo</sub>
+  </a>
 </p>
 
 ---
