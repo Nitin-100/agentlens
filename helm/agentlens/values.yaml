@@ -3,7 +3,7 @@
 replicaCount: 1
 
 image:
-  repository: agentlens/agentlens
+  repository: Nitin-100/agentlens
   tag: "0.3.0"
   pullPolicy: IfNotPresent
 

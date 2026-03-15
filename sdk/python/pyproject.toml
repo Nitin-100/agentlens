@@ -98,10 +98,10 @@ agentlens = "agentlens.cli:main"
 agentlens-mcp = "agentlens.integrations.mcp:main"
 
 [project.urls]
-Homepage = "https://github.com/agentlens/agentlens"
-Documentation = "https://github.com/agentlens/agentlens#readme"
-Repository = "https://github.com/agentlens/agentlens"
-Issues = "https://github.com/agentlens/agentlens/issues"
+Homepage = "https://github.com/Nitin-100/agentlens"
+Documentation = "https://github.com/Nitin-100/agentlens#readme"
+Repository = "https://github.com/Nitin-100/agentlens"
+Issues = "https://github.com/Nitin-100/agentlens/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]

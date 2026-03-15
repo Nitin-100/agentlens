@@ -21,7 +21,7 @@ Monitor every LLM call, tool use, decision, and error across **any AI agent fram
 
 **What's in the box:** OTEL ingestion with `gen_ai.*` mapping, nested trace tree/waterfall, agent graph (DAG), prompt replay with diff, zero-config cost anomaly detection, user/session grouping with `set_user()`, Prometheus `/metrics` endpoint, Grafana dashboard template, TypeScript + Python + Go + Java + JS SDKs, field-level encryption at rest (Fernet), built-in TLS, RBAC with key rotation, data retention auto-purge, PII redaction, MCP-native, plugin architecture (Postgres/ClickHouse/S3/Kafka), `agentlens verify` + `agentlens demo` CLI, Helm chart for K8s, Langfuse migration guide, one-click demo data, and 100 tests passing.
 
-[![CI](https://github.com/agentlens/agentlens/actions/workflows/ci.yml/badge.svg)](https://github.com/agentlens/agentlens/actions)
+[![CI](https://github.com/Nitin-100/agentlens/actions/workflows/ci.yml/badge.svg)](https://github.com/Nitin-100/agentlens/actions)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Tests: 100 passing](https://img.shields.io/badge/tests-100%20passing-brightgreen.svg)]()
@@ -91,7 +91,7 @@ LangSmith tracks tokens. Helicone tracks API calls. **AgentLens tracks agent beh
 ### Option 1: Docker (recommended)
 
 ```bash
-git clone https://github.com/agentlens/agentlens.git
+git clone https://github.com/Nitin-100/agentlens.git
 cd agentlens
 docker compose up -d
 # Dashboard: http://localhost:5173
@@ -1323,7 +1323,7 @@ registry.register_processor(EnrichmentProcessor(
 
 ```bash
 # Clone
-git clone https://github.com/agentlens/agentlens.git
+git clone https://github.com/Nitin-100/agentlens.git
 cd agentlens
 
 # Backend

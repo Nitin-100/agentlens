@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/agentlens/agentlens/actions"><img src="https://github.com/agentlens/agentlens/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://github.com/Nitin-100/agentlens/actions"><img src="https://github.com/Nitin-100/agentlens/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.9+-blue.svg" alt="Python 3.9+" /></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT" /></a>
   <img src="https://img.shields.io/badge/tests-100%20passing-brightgreen.svg" alt="Tests: 100 passing" />

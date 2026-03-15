@@ -7,7 +7,7 @@ setup(
     long_description=open("README.md", encoding="utf-8").read() if __import__("os").path.exists("README.md") else "",
     long_description_content_type="text/markdown",
     author="AgentLens",
-    url="https://github.com/agentlens/agentlens-python",
+    url="https://github.com/Nitin-100/agentlens-python",
     packages=find_packages(),
     python_requires=">=3.9",
     install_requires=[],  # Zero dependencies — stdlib only
