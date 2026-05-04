@@ -12,6 +12,24 @@ services:
       - agentlens_data:/app/data
     environment:
       - AGENTLENS_DB=/app/data/agentlens.db
+      - AGENTLENS_REQUIRE_AUTH=true
+      - AGENTLENS_CORS_ORIGINS=http://localhost:5173
+      # Set a unique HMAC secret for API key hashing (generate with: python -c "import secrets; print(secrets.token_hex(32))")
+      # - AGENTLENS_HMAC_SECRET=<your-secret>
+      # Set encryption key for PHI/PII at rest (generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())")
+      # - AGENTLENS_ENCRYPTION_KEY=<your-fernet-key>
+      # Breach notification webhook (Slack/Discord/PagerDuty)
+      # - AGENTLENS_BREACH_WEBHOOK=https://hooks.slack.com/services/...
+      # Session timeout in minutes (default: 30)
+      # - AGENTLENS_SESSION_TIMEOUT=30
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 256M
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8340/api/health')"]
       interval: 30s
@@ -19,6 +37,8 @@ services:
       retries: 3
       start_period: 10s
     restart: unless-stopped
+    networks:
+      - agentlens_internal
 
   # AgentLens Dashboard (Nginx serves React build, proxies API)
   dashboard:
@@ -30,7 +50,18 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
     restart: unless-stopped
+    networks:
+      - agentlens_internal
+
+networks:
+  agentlens_internal:
+    driver: bridge
 
 volumes:
   agentlens_data:

@@ -43,6 +43,10 @@ from otel import parse_otel_traces
 from anomaly import CostAnomalyDetector, compute_similarity, compute_diff
 from demo_data import generate_demo_data
 from metrics import record_event as metrics_record_event, render_metrics
+from compliance import (
+    phi_scanner, breach_detector, session_manager, ip_allowlist,
+    validate_webhook_url, ComplianceReporter, GDPRManager,
+)
 
 # ─── Structured Logging ─────────────────────────────────────
 
@@ -301,8 +305,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="AgentLens",
-    description="AI Agent Observability Server — Production Grade",
-    version="0.3.0",
+    description="AI Agent Observability Server — Enterprise Grade",
+    version="0.4.0",
     lifespan=lifespan,
 )
 
@@ -310,15 +314,26 @@ app = FastAPI(
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(RateLimitMiddleware)
-# CORS: configurable via env. Default allows all for dev; restrict in production.
-_cors_origins = os.environ.get("AGENTLENS_CORS_ORIGINS", "*").split(",")
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=_cors_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# CORS: locked down by default. Set AGENTLENS_CORS_ORIGINS to your dashboard URL.
+_cors_origins = os.environ.get("AGENTLENS_CORS_ORIGINS", "").split(",")
+_cors_origins = [o.strip() for o in _cors_origins if o.strip()]
+if _cors_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_cors_origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "X-Project"],
+    )
+else:
+    # No CORS origins configured = same-origin only (most secure default)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[],
+        allow_credentials=False,
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "X-Project"],
+    )
 
 
 # ─── Auth Helper ─────────────────────────────────────────────
@@ -328,12 +343,22 @@ async def resolve_auth(
     authorization: Optional[str] = Header(None),
     x_project: Optional[str] = Header(None),
 ) -> AuthContext:
-    """Resolve auth context from request. RBAC-aware."""
+    """Resolve auth context from request. RBAC-aware with breach detection."""
+    client_ip = request.client.host if request.client else "unknown"
+
+    # Check IP lockout (breach detection)
+    if breach_detector.is_locked_out(client_ip):
+        raise HTTPException(status_code=403, detail="IP temporarily locked out due to suspicious activity")
+
     auth_mgr: AuthManager = request.app.state.auth
     try:
         ctx = await auth_mgr.resolve(authorization, x_project)
+        # Track session activity
+        session_manager.touch(ctx.key_id)
         return ctx
     except PermissionError as e:
+        # Record failed auth for breach detection
+        breach_detector.record_failed_auth(client_ip)
         raise HTTPException(status_code=401, detail=str(e))
 
 
@@ -440,6 +465,17 @@ async def ingest_events(
         raise HTTPException(status_code=400, detail={"error": "No valid events", "validation_errors": errors})
 
     try:
+        # PHI/PII detection — tag events containing sensitive data
+        phi_alert_count = 0
+        for event in valid_events:
+            scan_result = phi_scanner.scan_event(event)
+            if scan_result["phi_detected"]:
+                event["_phi_detected"] = True
+                event["_phi_types"] = list({f["type"] for f in scan_result["findings"]})
+                phi_alert_count += 1
+        if phi_alert_count > 0:
+            logger.warning(f"PHI detected in {phi_alert_count}/{len(valid_events)} events (project={project_id})")
+
         # Encrypt sensitive fields before storage
         encrypted_events = [encryptor.encrypt_event(e) for e in valid_events]
         count = await db.insert_events(encrypted_events, project_id)
@@ -533,8 +569,26 @@ async def get_analytics(
 async def websocket_live(
     ws: WebSocket,
     project: str = "default",
+    token: Optional[str] = None,
 ):
-    """WebSocket endpoint for real-time event streaming."""
+    """WebSocket endpoint for real-time event streaming. Requires auth token."""
+    # Authenticate WebSocket via query param ?token=<api_key>
+    require_auth = os.environ.get("AGENTLENS_REQUIRE_AUTH", "true").lower() in ("1", "true", "yes")
+    if require_auth:
+        if not token:
+            await ws.close(code=4001, reason="Authentication required: ?token=<api_key>")
+            return
+        try:
+            auth_mgr: AuthManager = ws.app.state.auth
+            ctx = await auth_mgr.resolve(f"Bearer {token}", project)
+            if not ctx.has_permission("events.read"):
+                await ws.close(code=4003, reason="Insufficient permissions")
+                return
+            project = ctx.project_id
+        except PermissionError as e:
+            await ws.close(code=4001, reason=str(e))
+            return
+
     await ws_manager.connect(ws, project)
     try:
         while True:
@@ -568,6 +622,12 @@ async def create_alert(
     auth: AuthContext = Depends(require_permission("alerts.create")),
 ):
     """Create an alert rule. Fires webhook when condition is met."""
+    # SSRF prevention: validate webhook URL
+    if not validate_webhook_url(rule.webhook_url):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid webhook URL. Must be https:// and not target internal networks."
+        )
     project_id = auth.project_id
     result = await db.create_alert_rule(
         project_id=project_id,
@@ -633,7 +693,7 @@ async def health():
 
     return {
         "status": "ok" if db_ok else "degraded",
-        "version": "0.3.0",
+        "version": "0.4.0",
         "timestamp": time.time(),
         "dependencies": {
             "database": "ok" if db_ok else "error",
@@ -643,9 +703,13 @@ async def health():
             "tls": bool(os.environ.get("AGENTLENS_TLS_CERT")),
             "rbac": True,
             "pii_redaction": True,
+            "phi_detection": True,
             "audit_logging": True,
             "data_retention": True,
             "security_headers": True,
+            "breach_detection": True,
+            "ssrf_protection": True,
+            "hipaa_compliant": encryptor.enabled,
         },
         "db": stats,
         "ws_connections": sum(len(v) for v in ws_manager.connections.values()),
@@ -683,7 +747,7 @@ if os.path.exists(DASHBOARD_DIR):
 async def root():
     return {
         "name": "AgentLens",
-        "version": "0.3.0",
+        "version": "0.4.0",
         "docs": "/docs",
         "dashboard": "/dashboard",
         "api": {
@@ -703,6 +767,13 @@ async def root():
             "encryption_status": "/api/v1/admin/encryption",
             "audit": "/api/v1/audit",
             "health": "/api/health",
+            "compliance_posture": "/api/v1/compliance/posture",
+            "compliance_hipaa": "/api/v1/compliance/hipaa",
+            "compliance_soc2": "/api/v1/compliance/soc2",
+            "phi_scan": "/api/v1/compliance/phi/scan",
+            "gdpr_access": "/api/v1/gdpr/access",
+            "gdpr_erase": "/api/v1/gdpr/erase",
+            "gdpr_export": "/api/v1/gdpr/export",
         },
     }
 
@@ -949,6 +1020,106 @@ async def encryption_status(
         "rbac_enabled": True,
         "audit_logging": True,
     }
+
+
+# ─── Compliance & HIPAA/GDPR APIs ────────────────────────────
+
+@app.get("/api/v1/compliance/posture")
+async def compliance_posture(
+    auth: AuthContext = Depends(require_permission("admin.stats")),
+):
+    """Full compliance posture report (HIPAA + SOC2 + GDPR)."""
+    pool = await db.get_pool()
+    reporter = ComplianceReporter(pool)
+    return await reporter.get_full_report()
+
+
+@app.get("/api/v1/compliance/hipaa")
+async def hipaa_posture(
+    auth: AuthContext = Depends(require_permission("admin.stats")),
+):
+    """HIPAA compliance status."""
+    pool = await db.get_pool()
+    reporter = ComplianceReporter(pool)
+    return await reporter.get_hipaa_posture()
+
+
+@app.get("/api/v1/compliance/soc2")
+async def soc2_posture(
+    auth: AuthContext = Depends(require_permission("admin.stats")),
+):
+    """SOC2 Type II readiness status."""
+    pool = await db.get_pool()
+    reporter = ComplianceReporter(pool)
+    return await reporter.get_soc2_posture()
+
+
+@app.post("/api/v1/compliance/phi/scan")
+async def scan_for_phi(
+    request: FRequest,
+    auth: AuthContext = Depends(require_permission("admin.stats")),
+):
+    """Scan text for PHI/PII. Returns findings."""
+    body = await request.json()
+    text = body.get("text", "")
+    return {
+        "phi_detected": phi_scanner.contains_phi(text),
+        "findings": phi_scanner.scan(text),
+        "masked": phi_scanner.mask(text),
+    }
+
+
+class GDPRRequest(BaseModel):
+    user_id: str = Field(..., min_length=1, max_length=200)
+
+
+@app.post("/api/v1/gdpr/access")
+async def gdpr_access(
+    req: GDPRRequest,
+    request: FRequest,
+    auth: AuthContext = Depends(require_permission("admin.stats")),
+):
+    """GDPR Right of Access — return all data for a user_id."""
+    pool = await db.get_pool()
+    gdpr = GDPRManager(pool)
+    result = await gdpr.access_request(req.user_id, auth.project_id)
+    await request.app.state.auth.log_action(
+        "gdpr.access", auth, resource="gdpr", resource_id=req.user_id,
+    )
+    return result
+
+
+@app.delete("/api/v1/gdpr/erase")
+async def gdpr_erase(
+    req: GDPRRequest,
+    request: FRequest,
+    auth: AuthContext = Depends(require_permission("admin.cleanup")),
+):
+    """GDPR Right to Erasure — delete all data for a user_id. Irreversible."""
+    pool = await db.get_pool()
+    gdpr = GDPRManager(pool)
+    result = await gdpr.erasure_request(req.user_id, auth.project_id)
+    await request.app.state.auth.log_action(
+        "gdpr.erase", auth, resource="gdpr", resource_id=req.user_id,
+        details=json.dumps(result),
+    )
+    return result
+
+
+@app.post("/api/v1/gdpr/export")
+async def gdpr_export(
+    req: GDPRRequest,
+    request: FRequest,
+    auth: AuthContext = Depends(require_permission("admin.stats")),
+):
+    """GDPR Right to Portability — export user data as JSON."""
+    pool = await db.get_pool()
+    gdpr = GDPRManager(pool)
+    result = await gdpr.export_data(req.user_id, auth.project_id)
+    await request.app.state.auth.log_action(
+        "gdpr.export", auth, resource="gdpr", resource_id=req.user_id,
+    )
+    return result
 
 
 # ─── OpenTelemetry Ingestion ─────────────────────────────────

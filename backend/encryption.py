@@ -98,7 +98,7 @@ class FieldEncryptor:
             return f"enc:{token.decode('utf-8')}"
         except Exception as e:
             logger.error(f"Encryption failed: {e}")
-            return plaintext  # Fail open — store unencrypted rather than lose data
+            raise RuntimeError(f"Encryption failed — refusing to store plaintext. Error: {e}")
 
     def decrypt(self, ciphertext: Optional[str]) -> Optional[str]:
         """Decrypt a field. Only decrypts if prefixed with 'enc:'."""

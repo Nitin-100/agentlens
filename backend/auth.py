@@ -72,8 +72,11 @@ class AuthContext:
 
 
 def hash_api_key(key: str) -> str:
-    """SHA-256 hash for storing API keys (never store plaintext)."""
-    return hashlib.sha256(key.encode()).hexdigest()
+    """HMAC-SHA256 hash for storing API keys (never store plaintext).
+    Uses a server-side secret for keyed hashing to prevent rainbow table attacks."""
+    hmac_secret = os.environ.get("AGENTLENS_HMAC_SECRET", "agentlens-default-hmac-change-me")
+    import hmac as _hmac
+    return _hmac.new(hmac_secret.encode(), key.encode(), hashlib.sha256).hexdigest()
 
 
 def generate_api_key(prefix: str = "al") -> str:
@@ -125,21 +128,24 @@ def init_auth_tables(conn: sqlite3.Connection):
     conn.executescript(AUTH_SCHEMA)
     conn.commit()
 
-    # Ensure default project has admin + member keys
+    # Auto-generate a secure admin key if none exist (never hardcode keys)
     existing = conn.execute(
         "SELECT COUNT(*) FROM api_keys WHERE project_id='default'"
     ).fetchone()[0]
     if existing == 0:
         now = time.time()
-        # Default admin key (for backwards compat)
-        admin_key = "al_default_key"
+        admin_key = generate_api_key()
         conn.execute(
             """INSERT OR IGNORE INTO api_keys (id, project_id, name, key_hash, key_prefix, role, created_at)
-               VALUES (?, 'default', 'Default Admin Key', ?, 'al_de', 'admin', ?)""",
-            (str(uuid.uuid4()), hash_api_key(admin_key), now),
+               VALUES (?, 'default', 'Default Admin Key', ?, ?, 'admin', ?)""",
+            (str(uuid.uuid4()), hash_api_key(admin_key), admin_key[:8], now),
         )
         conn.commit()
-        logger.info("Default admin API key created: al_default_key")
+        logger.warning(f"\n{'='*60}")
+        logger.warning(f"  AUTO-GENERATED ADMIN API KEY (shown ONCE):")
+        logger.warning(f"  {admin_key}")
+        logger.warning(f"  Save this key securely. It cannot be recovered.")
+        logger.warning(f"{'='*60}\n")
 
 
 # ─── Auth Resolution ─────────────────────────────────────────
@@ -159,14 +165,14 @@ class AuthManager:
           - Bearer <api_key>
           - No auth → default project as viewer (if AGENTLENS_REQUIRE_AUTH is not set)
         """
-        require_auth = os.environ.get("AGENTLENS_REQUIRE_AUTH", "").lower() in ("1", "true", "yes")
+        require_auth = os.environ.get("AGENTLENS_REQUIRE_AUTH", "true").lower() in ("1", "true", "yes")
 
         if not authorization or not authorization.startswith("Bearer "):
             if require_auth:
                 raise PermissionError("Authentication required. Provide Authorization: Bearer <api_key>")
             return AuthContext(
                 project_id=x_project or "default",
-                role=Role.ADMIN,  # Backwards compat: no auth = full access
+                role=Role.VIEWER,  # No auth = read-only access (principle of least privilege)
                 key_id="anonymous",
                 key_name="anonymous",
             )
