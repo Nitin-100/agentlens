@@ -3,19 +3,22 @@
 </h1>
 
 <p align="center">
-  <strong>Open-source observability for AI agents.</strong><br/>
-  Trace every LLM call, tool use, and decision — in real-time.
+  <strong>Open-source observability for AI agents. Enterprise-grade security.</strong><br/>
+  Trace every LLM call, tool use, and decision — in real-time. HIPAA/SOC2/GDPR ready.
 </p>
 
 <p align="center">
   <a href="https://github.com/Nitin-100/agentlens/actions"><img src="https://github.com/Nitin-100/agentlens/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.9+-blue.svg" alt="Python 3.9+" /></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT" /></a>
-  <img src="https://img.shields.io/badge/tests-100%20passing-brightgreen.svg" alt="Tests: 100 passing" />
+  <img src="https://img.shields.io/badge/tests-146%20passing-brightgreen.svg" alt="Tests: 146 passing" />
+  <img src="https://img.shields.io/badge/HIPAA-ready-blue.svg" alt="HIPAA Ready" />
+  <img src="https://img.shields.io/badge/SOC2-ready-blue.svg" alt="SOC2 Ready" />
+  <img src="https://img.shields.io/badge/GDPR-compliant-blue.svg" alt="GDPR Compliant" />
 </p>
 
 <p align="center">
-  <a href="QUICKSTART.md">Quick Start</a> · <a href="#features">Features</a> · <a href="#how-it-works">Architecture</a> · <a href="#integrations">Integrations</a> · <a href="#comparison-vs-langfuse">vs Langfuse</a> · <a href="https://github.com/Nitin-100/agentlens/raw/main/Demo.mp4">Watch Demo</a>
+  <a href="QUICKSTART.md">Quick Start</a> · <a href="#features">Features</a> · <a href="#how-it-works">Architecture</a> · <a href="#integrations">Integrations</a> · <a href="#security">Security</a> · <a href="#comparison-vs-langfuse">vs Langfuse</a> · <a href="https://github.com/Nitin-100/agentlens/raw/main/Demo.mp4">Watch Demo</a>
 </p>
 
 ---
@@ -105,8 +108,13 @@ response = openai.chat.completions.create(model="gpt-4o", messages=[...])
 | 💰 | **Cost Tracking** | Automatic pricing for 20+ models (GPT-4o, Claude 4, Gemini Pro, etc.) |
 | 🔌 | **Plugin System** | Swap DB (SQLite → Postgres → ClickHouse), add exporters (S3, Kafka, Webhook) |
 | 🛡️ | **PII Redaction** | Auto-scrubs emails, phones, SSNs, credit cards, API keys before storage |
-| 🔐 | **Encryption at Rest** | AES-128-CBC + HMAC-SHA256 (Fernet) field-level encryption |
-| 🔑 | **RBAC & API Keys** | Admin/Member/Viewer roles, key rotation with grace period |
+| 🔐 | **Encryption at Rest** | AES-128-CBC + HMAC-SHA256 (Fernet) field-level encryption (fail-closed) |
+| 🔑 | **RBAC & API Keys** | Admin/Member/Viewer roles, key rotation with grace period, HMAC-SHA256 hashing |
+| 🏥 | **HIPAA Compliance** | PHI auto-detection (SSN, MRN, diagnosis, medication), auto-masking, audit trail |
+| 📋 | **SOC2 Type II Ready** | Access controls, encryption, logging, incident response, data retention |
+| 🇪🇺 | **GDPR Compliant** | Data subject access, erasure, export APIs (Right to Access/Erasure/Portability) |
+| 🚨 | **Breach Detection** | Auto IP lockout after brute force, webhook alerts, configurable thresholds |
+| 🛡️ | **SSRF Protection** | Webhook URL validation blocks private/internal networks |
 | 📊 | **Prometheus Metrics** | Native `/metrics` endpoint — plug into Grafana |
 | 🤖 | **MCP Native** | MCP client monitoring + MCP server for Claude Desktop |
 | 🧪 | **One-Click Demo** | Load 500+ events across 5 agent types to explore instantly |
@@ -359,38 +367,80 @@ Add to `claude_desktop_config.json`:
 
 ## Security
 
+> **See [SECURITY.md](SECURITY.md) for the full security policy, vulnerability reporting, and environment variables.**
+
 | Capability | Details |
 |---|---|
-| **Encryption at rest** | AES-128-CBC + HMAC-SHA256 (Fernet) — prompts, completions, tool args, errors |
-| **TLS** | Built-in uvicorn SSL, self-signed cert generator, no nginx needed |
-| **RBAC** | Admin / Member / Viewer (14/7/4 permissions), API key scoping per project |
-| **API key rotation** | Configurable grace period, old key auto-expires |
+| **Encryption at rest** | AES-128-CBC + HMAC-SHA256 (Fernet) — fail-closed (rejects data on error, never stores plaintext) |
+| **TLS** | Built-in uvicorn SSL, self-signed cert generator, HSTS headers |
+| **RBAC** | Admin / Member / Viewer (14/7/4 permissions), per-project API key scoping |
+| **API key security** | HMAC-SHA256 hashed (keyed, not plain SHA-256), auto-generated on first run |
+| **Auth by default** | `AGENTLENS_REQUIRE_AUTH=true` by default. No-auth falls back to viewer (read-only) |
+| **CORS locked** | No wildcard — must explicitly set `AGENTLENS_CORS_ORIGINS` |
+| **PHI/PII detection** | Auto-scans for SSN, MRN, DOB, diagnosis, medication, email, phone, credit cards, Aadhaar, PAN, API keys |
+| **Breach detection** | Auto IP lockout after brute force (default: 10 failed auths in 5 min), webhook notification |
+| **SSRF protection** | Webhook URLs validated — blocks private IPs, localhost, cloud metadata endpoints |
+| **Session timeout** | Configurable (default: 30 min) |
+| **IP allowlisting** | Per-project IP restrictions |
 | **PII redaction** | Emails, phones, SSNs, credit cards, API keys — auto-scrubbed |
 | **Audit logging** | Every admin action: timestamp, IP, user-agent |
 | **Data retention** | Per-project policies, automated background purge |
 | **Multi-tenancy** | Project-level data isolation |
 | **Self-hosted** | Your data never leaves your infrastructure |
+| **Docker hardened** | Non-root container, multi-stage build, resource limits |
+
+### Compliance
+
+| Framework | Status | Key Controls |
+|-----------|--------|--------------|
+| **HIPAA** | Ready | Encryption at rest, PHI auto-detection, audit logs, access controls, breach notification, data retention |
+| **SOC2 Type II** | Ready | RBAC, encryption, logging, incident response, data retention, network security |
+| **GDPR** | Compliant | Data subject access/erasure/export APIs, data minimization, breach notification |
 
 <details>
 <summary><b>Configuration examples</b></summary>
 
 ```bash
-# Encryption — auto-generates key on first start
+# Authentication (enabled by default)
+export AGENTLENS_REQUIRE_AUTH=true
+
+# CORS — set to your dashboard URL
+export AGENTLENS_CORS_ORIGINS=http://localhost:5173
+
+# HMAC secret for API key hashing (generate: python -c "import secrets; print(secrets.token_hex(32))")
+export AGENTLENS_HMAC_SECRET=your-secret-here
+
+# Encryption at rest (generate: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())")
 export AGENTLENS_ENCRYPTION_KEY="your-base64-fernet-key"
 
 # TLS
-cd backend && python tls.py --generate-self-signed
 export AGENTLENS_TLS_CERT=agentlens-cert.pem
 export AGENTLENS_TLS_KEY=agentlens-key.pem
 
+# Breach detection webhook (Slack/Discord/PagerDuty)
+export AGENTLENS_BREACH_WEBHOOK=https://hooks.slack.com/services/...
+export AGENTLENS_BREACH_THRESHOLD=10
+
+# Session timeout (minutes)
+export AGENTLENS_SESSION_TIMEOUT=30
+
+# GDPR: Data subject erasure
+curl -X DELETE http://localhost:8340/api/v1/gdpr/erase \
+  -H "Authorization: Bearer $API_KEY" \
+  -d '{"user_id": "user_123"}'
+
+# Compliance posture report
+curl http://localhost:8340/api/v1/compliance/posture \
+  -H "Authorization: Bearer $API_KEY"
+
 # Key rotation (24h grace period)
 curl -X POST http://localhost:8340/api/v1/keys/{key_id}/rotate \
-  -H "Authorization: Bearer al_admin_key" \
+  -H "Authorization: Bearer $API_KEY" \
   -d '{"grace_period_hours": 24}'
 
 # Data retention — 90 days
 curl -X PUT http://localhost:8340/api/v1/retention \
-  -H "Authorization: Bearer al_admin_key" \
+  -H "Authorization: Bearer $API_KEY" \
   -d '{"retention_days": 90, "delete_events": true, "delete_sessions": true}'
 ```
 </details>
@@ -432,7 +482,7 @@ pip install agentlens && python your_agent.py
 
 ```bash
 helm install agentlens ./helm/agentlens \
-  --set image.tag=0.3.0 \
+  --set image.tag=0.4.0 \
   --set persistence.enabled=true \
   --set prometheus.serviceMonitor.enabled=true
 ```
@@ -470,7 +520,13 @@ services:
 | RBAC | ✅ | ✅ |
 | **Cost anomaly detection** | **✅ Zero-config** | ❌ |
 | **PII redaction (built-in)** | **✅** | ❌ |
-| **Encryption at rest** | **✅** | ❌ |
+| **PHI detection (HIPAA)** | **✅ Auto-scan** | ❌ |
+| **Encryption at rest (fail-closed)** | **✅** | ❌ |
+| **HIPAA compliance** | **✅ Ready** | ❌ |
+| **SOC2 Type II** | **✅ Ready** | ❌ |
+| **GDPR APIs** | **✅ Access/Erasure/Export** | ❌ |
+| **Breach detection** | **✅ Auto-lockout** | ❌ |
+| **SSRF protection** | **✅** | ❌ |
 | **Plugin system (DB/export)** | **✅** | ❌ |
 | **MCP native** | **✅** | ❌ |
 | **Agent graph (DAG)** | **✅** | ❌ |
@@ -482,7 +538,7 @@ services:
 | Datasets & experiments | ❌ | ✅ |
 | Maturity & community | Early | Established |
 
-**Honest take:** Langfuse is more mature with a larger ecosystem. AgentLens differentiates on **developer experience** (zero deps, CLI verify, one-click demo), **security** (encryption, PII redaction, TLS built-in), and **unique features** (cost anomaly auto-detection, plugin architecture, MCP-native, agent graph). See [`docs/migrating-from-langfuse.md`](docs/migrating-from-langfuse.md) for a migration guide.
+**Honest take:** Langfuse is more mature with a larger ecosystem. AgentLens differentiates on **enterprise security** (HIPAA/SOC2/GDPR, breach detection, PHI scanning, fail-closed encryption), **developer experience** (zero deps, CLI verify, one-click demo), and **unique features** (cost anomaly auto-detection, plugin architecture, MCP-native, agent graph). See [`docs/migrating-from-langfuse.md`](docs/migrating-from-langfuse.md) for a migration guide.
 
 ---
 
@@ -514,6 +570,13 @@ services:
 | `POST` | `/api/v1/projects` | Create project |
 | `GET/PUT` | `/api/v1/retention` | Data retention policy |
 | `POST` | `/v1/traces` | OTEL OTLP ingestion |
+| `GET` | `/api/v1/compliance/posture` | HIPAA + SOC2 + GDPR posture |
+| `GET` | `/api/v1/compliance/hipaa` | HIPAA compliance status |
+| `GET` | `/api/v1/compliance/soc2` | SOC2 readiness |
+| `POST` | `/api/v1/compliance/phi/scan` | Scan text for PHI/PII |
+| `POST` | `/api/v1/gdpr/access` | GDPR data subject access |
+| `DELETE` | `/api/v1/gdpr/erase` | GDPR right to erasure |
+| `POST` | `/api/v1/gdpr/export` | GDPR data portability |
 | `POST` | `/api/v1/demo/load` | Load demo data |
 | `GET` | `/api/health` | Health check |
 | `WS` | `/ws/live` | WebSocket live stream |
@@ -615,7 +678,15 @@ registry.register_processor(SamplingProcessor(rate=0.1))
 | `agentlens demo` CLI | ✅ Shipped |
 | Helm chart for Kubernetes | ✅ Shipped |
 | Langfuse migration guide | ✅ Shipped |
-| 100 tests passing | ✅ Shipped |
+| 146 tests passing | ✅ Shipped |
+| HIPAA compliance module | ✅ Shipped (v0.4.0) |
+| GDPR data subject APIs | ✅ Shipped (v0.4.0) |
+| SOC2 compliance posture | ✅ Shipped (v0.4.0) |
+| Breach detection & lockout | ✅ Shipped (v0.4.0) |
+| PHI/PII auto-detection | ✅ Shipped (v0.4.0) |
+| SSRF protection | ✅ Shipped (v0.4.0) |
+| Fail-closed encryption | ✅ Shipped (v0.4.0) |
+| Docker hardening (non-root) | ✅ Shipped (v0.4.0) |
 | Prompt management | 🔴 Not planned (use Langfuse/PromptLayer) |
 | LLM-as-judge evals | 🔴 Not planned (use Braintrust) |
 

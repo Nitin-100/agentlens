@@ -18,8 +18,12 @@ This guide helps you migrate from Langfuse to AgentLens with minimal friction.
 | Nested trace tree | ✅ | ✅ Waterfall view |
 | Prometheus `/metrics` | ❌ | ✅ Native |
 | Helm chart | Community | ✅ Official |
-| SDK overhead | Higher (network calls) | <1ms (async batching) |
-
+| SDK overhead | Higher (network calls) | <1ms (async batching) || **HIPAA compliance** | ❌ | ✅ PHI detection, audit trail |
+| **SOC2 Type II** | ❌ | ✅ Compliance posture |
+| **GDPR APIs** | ❌ | ✅ Access/Erasure/Export |
+| **Breach detection** | ❌ | ✅ Auto-lockout + alerts |
+| **Encryption (fail-closed)** | ❌ | ✅ Never stores plaintext |
+| **SSRF protection** | ❌ | ✅ Webhook validation |
 ---
 
 ## Step 1: Install AgentLens
@@ -214,7 +218,7 @@ agentlens verify http://localhost:8340
 
 Expected output:
 ```
-🔭 AgentLens Verify — v0.3.0
+🔭 AgentLens Verify — v0.4.0
    Server: http://localhost:8340
 
   ✅ Server Reachable        OK                                       (5ms)
@@ -243,8 +247,13 @@ Expected output:
 | — | `GET /api/v1/anomalies` |
 | — | `GET /api/v1/sessions/:id/graph` (DAG) |
 | — | `GET /metrics` (Prometheus) |
-| — | `POST /api/v1/otel/v1/traces` (OTEL) |
-| — | `POST /api/v1/demo/load` |
+| `POST` | `/v1/traces` | OTEL OTLP ingestion |
+| — | `GET /api/v1/compliance/posture` | HIPAA + SOC2 + GDPR status |
+| — | `POST /api/v1/gdpr/access` | Data subject access |
+| — | `DELETE /api/v1/gdpr/erase` | Data subject erasure |
+| — | `POST /api/v1/gdpr/export` | Data portability |
+| — | `POST /api/v1/compliance/phi/scan` | PHI detection scan |
+| — | `POST /api/v1/demo/load` | Load demo data |
 
 ---
 

@@ -19,12 +19,14 @@
 
 Monitor every LLM call, tool use, decision, and error across **any AI agent framework** — in real-time. Self-hosted. Open-source. Zero mandatory dependencies.
 
-**What's in the box:** OTEL ingestion with `gen_ai.*` mapping, nested trace tree/waterfall, agent graph (DAG), prompt replay with diff, zero-config cost anomaly detection, user/session grouping with `set_user()`, Prometheus `/metrics` endpoint, Grafana dashboard template, TypeScript + Python + Go + Java + JS SDKs, field-level encryption at rest (Fernet), built-in TLS, RBAC with key rotation, data retention auto-purge, PII redaction, MCP-native, plugin architecture (Postgres/ClickHouse/S3/Kafka), `agentlens verify` + `agentlens demo` CLI, Helm chart for K8s, Langfuse migration guide, one-click demo data, and 100 tests passing.
+**What's in the box:** OTEL ingestion with `gen_ai.*` mapping, nested trace tree/waterfall, agent graph (DAG), prompt replay with diff, zero-config cost anomaly detection, user/session grouping with `set_user()`, Prometheus `/metrics` endpoint, Grafana dashboard template, TypeScript + Python + Go + Java + JS SDKs, field-level encryption at rest (Fernet, fail-closed), built-in TLS, RBAC with key rotation, data retention auto-purge, PII redaction, PHI/PII auto-detection (HIPAA), GDPR data subject APIs, SOC2 compliance posture, breach detection with auto-lockout, SSRF protection, MCP-native, plugin architecture (Postgres/ClickHouse/S3/Kafka), `agentlens verify` + `agentlens demo` CLI, Helm chart for K8s, Langfuse migration guide, one-click demo data, and 146 tests passing.
 
 [![CI](https://github.com/Nitin-100/agentlens/actions/workflows/ci.yml/badge.svg)](https://github.com/Nitin-100/agentlens/actions)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![Tests: 100 passing](https://img.shields.io/badge/tests-100%20passing-brightgreen.svg)]()
+[![Tests: 146 passing](https://img.shields.io/badge/tests-146%20passing-brightgreen.svg)]()
+[![HIPAA Ready](https://img.shields.io/badge/HIPAA-ready-blue.svg)]()
+[![GDPR Compliant](https://img.shields.io/badge/GDPR-compliant-blue.svg)]()
 
 ```python
 from agentlens import AgentLens, auto_patch
@@ -42,7 +44,7 @@ response = openai.chat.completions.create(model="gpt-4o", messages=[...])
 agentlens verify http://localhost:8340
 
 # ✅ Server Reachable       HTTP 200                (12ms)
-# ✅ Health Endpoint         status=healthy, v=0.3.0 (8ms)
+# ✅ Health Endpoint         status=healthy, v=0.4.0 (8ms)
 # ✅ Event Ingestion         inserted=1              (15ms)
 # ✅ OTEL Endpoint           HTTP 200, inserted=0    (10ms)
 # 🎉 All 7 checks passed!
@@ -179,11 +181,22 @@ pip install agentlens[all]                     # Everything
 ### Production-Grade Reliability
 - **RBAC** — Role-based access control with admin/member/viewer roles, API key scoping per project, audit logging
 - **Multi-tenancy** — Project-level data isolation, per-project API keys, per-project rate limits
-- **Encryption at rest** — AES-128-CBC + HMAC-SHA256 (Fernet) field-level encryption for sensitive data (prompts, completions, tool args, errors)
-- **TLS support** — Built-in HTTPS via uvicorn SSL, no nginx/Caddy required. Self-signed cert generation included
-- **Data retention policies** — Per-project configurable auto-purge (default: 90 days), background cleanup, purge history/audit
-- **Key rotation** — Rotate API keys with configurable grace period, old key auto-expires after grace window
+- **Encryption at rest** — AES-128-CBC + HMAC-SHA256 (Fernet) field-level encryption. **Fail-closed**: rejects data on error, never stores plaintext
+- **Auth by default** — `AGENTLENS_REQUIRE_AUTH=true` by default. No-auth falls back to read-only viewer role
+- **CORS locked** — No wildcard origins. Must explicitly set `AGENTLENS_CORS_ORIGINS`
+- **API key security** — HMAC-SHA256 hashed (keyed, not plain SHA-256), auto-generated on first run
+- **HIPAA compliance** — PHI auto-detection (SSN, MRN, diagnosis, medication), auto-masking, compliance posture reporting
+- **SOC2 Type II** — Full compliance posture at `/api/v1/compliance/posture`
+- **GDPR** — Data subject access (`/api/v1/gdpr/access`), erasure, export APIs
+- **Breach detection** — Auto IP lockout after brute force, webhook notification via `AGENTLENS_BREACH_WEBHOOK`
+- **SSRF protection** — Webhook URLs validated against private/internal networks, cloud metadata endpoints
+- **Session timeout** — Configurable (default: 30 min)
+- **IP allowlisting** — Per-project IP restrictions
+- **TLS support** — Built-in HTTPS via uvicorn SSL, no nginx/Caddy required
+- **Data retention policies** — Per-project configurable auto-purge, background cleanup, purge history/audit
+- **Key rotation** — Rotate API keys with configurable grace period, old key auto-expires
 - **Security headers** — X-Frame-Options, CSP, HSTS, XSS Protection, no-cache on all responses
+- **Docker hardened** — Non-root container, multi-stage build, health checks, resource limits
 - **Circuit breaker** — stops hammering a down server (CLOSED → OPEN → HALF_OPEN)
 - **Exponential backoff retry** — 3 attempts with jitter
 - **Dead Letter Queue** — failed events saved to disk, replayed on recovery

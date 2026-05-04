@@ -114,7 +114,7 @@ from agentlens import AgentLens, auto_patch
 
 lens = AgentLens(
     server_url="http://localhost:8340",   # your AgentLens server
-    api_key="al_default_key",             # default key, change for production
+    api_key="al_your_api_key_here",       # shown once at first startup — save it!
     project="my-project",
     sample_rate=1.0,                      # 1.0 = capture everything, use 0.1 for 10% in prod
 )
@@ -197,7 +197,7 @@ You should see:
 ```
 AgentLens Server Verification
   Server Reachable       HTTP 200
-  Health Endpoint        status=ok, v=0.3.0
+  Health Endpoint        status=ok, v=0.4.0
   Events Writable        inserted=1
   Sessions Readable      HTTP 200
   Analytics Working      HTTP 200
@@ -220,7 +220,7 @@ from agentlens import AgentLens, monitor, tool, step, auto_patch
 
 lens = AgentLens(
     server_url="http://localhost:8340",
-    api_key="al_default_key",
+    api_key="al_your_api_key_here",       # shown once at first startup
     project="my-project",
 )
 
